@@ -1,108 +1,141 @@
-# 🏡 California Housing Dataset – Analysis & Preprocessing
+# 🏠 California Housing Price Prediction – End-to-End ML Pipeline
 
-This project performs an initial analysis and preprocessing of the **California Housing Dataset**, preparing it for machine learning tasks such as housing price prediction.  
-The notebook includes dataset loading, inspection, feature understanding, location-based feature engineering, and splitting considerations.
-
----
-
-## 📥 1. Dataset Loading
-
-A custom function was created to reliably download and load the dataset:
-
-- Checks if the dataset exists locally  
-- Downloads `housing.tgz` if missing  
-- Extracts the archive  
-- Loads `housing.csv` into a pandas DataFrame  
-
-**Code used:**
-```python
-from pathlib import Path
-import pandas as pd
-import tarfile
-import urllib.request
-
-def load_housing_data():
-    tarball_path = Path("datasets/housing/housing.tgz")
-    if not tarball_path.is_file():
-        Path("datasets/housing").mkdir(parents=True, exist_ok=True)
-        url = "https://raw.githubusercontent.com/ageron/handson-ml/master/datasets/housing/housing.tgz"
-        urllib.request.urlretrieve(url, tarball_path)
-        with tarfile.open(tarball_path) as housing_tarball:
-            housing_tarball.extractall(path="datasets/housing")
-    return pd.read_csv(Path("datasets/housing/housing.csv"))
-
-housing_full = load_housing_data()
-```
+This project performs an end-to-end machine learning workflow using the California Housing Dataset. It includes data loading, exploratory data analysis (EDA), preprocessing, feature engineering, model building, hyperparameter tuning, evaluation, and model deployment. The goal is to build a reliable regression model that predicts median house values for California districts.
 
 ---
 
-## 📊 2. Dataset Inspection
+## 📁 Project Structure
+    ├── datasets/
+│ └── housing.tgz # Auto-downloaded dataset
+├── House_predictions.ipynb # Main notebook (full workflow)
+└── california_housing_model.pkl # Saved final model
 
-The initial inspection included:
-
-- Viewing first few rows: `housing_full.head()`  
-- Metadata summary: `housing_full.info()`  
-
-**Findings:**
-- Contains typical columns such as `longitude`, `latitude`, `housing_median_age`, `total_rooms`, `population`, `median_income`, and `median_house_value`.  
-- No major missing-value issues reported at this stage.  
-- `ocean_proximity` is a categorical feature requiring later encoding.
 
 ---
 
-## 📍 3. Location-Based Feature Engineering
+## 📊 1. Dataset Overview
 
-A new **location identifier** was generated using:
-
-- Latitude  
-- Longitude  
-
-**Purpose:**
-- Ensure each geographic area receives a consistent ID  
-- Useful for grouping, clustering, or stratified sampling  
-- Avoids random variation in splits caused by floating-point precision  
-
-This reflects a common approach in real-world geospatial datasets.
+The dataset contains housing statistics for California districts, including:
+- Median income  
+- Housing median age  
+- Total rooms & total bedrooms  
+- Population & households  
+- Latitude & longitude  
+- Median house value (target)  
+- Ocean proximity (categorical feature)
 
 ---
 
-## 🔀 4. Train–Test Splitting (Concept)
+## 🔍 2. Exploratory Data Analysis (EDA)
 
-The notebook includes a conceptual explanation:
+The notebook performs:
+- `.head()`, `.info()`, `.describe()`  
+- Category counts for `ocean_proximity`  
+- Histograms for distributions  
+- Identification of missing values and skew  
 
-> Splitting is important especially for large datasets to avoid losing important representation between train and test sets due to random selection.
-
-**Key takeaway:**
-- Consistent splitting is crucial to prevent data leakage  
-- Location-based IDs help create reproducible and stable splits  
-
----
-
-## 🧠 5. Overall Insights
-
-- The dataset contains a rich combination of **numerical**, **geospatial**, and **categorical** features.  
-- Creating a stable location-based ID is a foundational preprocessing step before modeling.  
-- The data structure is suitable for regression tasks (predicting median house value).  
-- Proper splitting is essential to ensure model generalization.
+Key findings:
+- Median income strongly correlates with house prices  
+- Ocean proximity is unevenly distributed  
+- Room and population-related features are highly skewed  
+- Missing values exist in `total_bedrooms`
 
 ---
 
-## 📌 Summary
+## 🧹 3. Data Preprocessing
 
-This notebook covers the essential early steps of a predictive modeling project:
-
-1. Reliable dataset download and extraction  
-2. Loading and verifying the dataset  
-3. Basic structure inspection  
-4. Engineering a reproducible location identifier  
-5. Understanding the importance of proper splitting  
-
-This serves as the groundwork for future stages such as:
-
-- Exploratory data analysis (EDA)  
-- Handling missing values  
-- Feature scaling  
-- Encoding categorical variables  
-- Training regression models  
+Steps completed:
+- Train-test split using **StratifiedShuffleSplit** (based on income category)
+- Median imputation for missing values (`SimpleImputer`)
+- Standardization using `StandardScaler`
+- One-hot encoding for `ocean_proximity`
+- Full preprocessing pipeline created using **ColumnTransformer**
 
 ---
+
+## 🧪 4. Feature Engineering
+
+The following engineered features were added to improve predictive power:
+- `rooms_per_household`
+- `bedrooms_per_room`
+- `population_per_household`
+
+These help reduce noise in raw counts and capture meaningful ratios.
+
+---
+
+## 🤖 5. Model Training
+
+Trained regression models:
+- **Linear Regression** (baseline)
+- **Decision Tree Regressor** (overfitted)
+- **Random Forest Regressor** (best performer)
+
+Evaluation was done with cross-validation RMSE.  
+Random Forest delivered the most reliable performance.
+
+---
+
+## 🔧 6. Hyperparameter Tuning
+
+Used **RandomizedSearchCV** to optimize Random Forest parameters:
+- `n_estimators`
+- `max_features`
+- `bootstrap`
+
+This improved performance over baseline RandomForest settings.
+
+---
+
+## 🧾 7. Final Evaluation
+
+The tuned model was tested on the **final test set**, computing:
+- Final RMSE  
+- 95% confidence interval for the prediction error  
+
+This confirms model generalization accuracy.
+
+---
+
+## 💾 8. Saving & Loading the Model
+
+The final model is saved using joblib:
+
+```python```
+
+joblib.dump(final_model, "california_housing_model.pkl")
+
+
+## 🚀 9. Key Insights
+
+1) Median income is the most influential predictor.
+
+2) Engineered ratio features notably improve model performance.
+
+3) Decision Trees overfit easily; Random Forest generalizes better.
+
+4) Preprocessing (imputation, scaling, encoding) is crucial.
+
+5) Hyperparameter tuning boosts model accuracy and reliability.
+
+
+
+## ✅ Conclusion
+
+1)This project demonstrates a complete Machine Learning pipeline for a real-world dataset, covering:
+
+2) Data ingestion
+
+3) Exploratory data analysis
+
+4) Preprocessing & feature engineering
+
+5) Model selection & training
+
+6) Cross-validation
+
+7) Hyperparameter tuning
+
+8) Final evaluation
+
+9) Model saving for deployment
