@@ -5,7 +5,7 @@ This project performs an end-to-end machine learning workflow using the Californ
 ---
 
 ## 📁 Project Structure
-    ├── datasets/
+├── datasets/
 │ └── housing.tgz # Auto-downloaded dataset
 ├── House_predictions.ipynb # Main notebook (full workflow)
 └── california_housing_model.pkl # Saved final model
